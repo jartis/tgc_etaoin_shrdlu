@@ -277,7 +277,7 @@ function DrawGame() {
         ctx.fillText(dirChar, mapX, mapY);
     }
     if (RootSteps % 2 == 0 && RootSteps < 21) {
-        ctx.font = "bold 32px 'Arial', 'Helvetica', sans-serif";
+        ctx.font = "bold 32px 'Baloo 2', sans-serif";
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
