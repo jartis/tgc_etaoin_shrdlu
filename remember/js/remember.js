@@ -99,6 +99,7 @@ var ModalUp = false;
 
 var curFont = 'potralight';
 var currentTextSpot = 0;
+var voices;
 
 //#region Game logic goes here
 
@@ -106,6 +107,12 @@ function InitGame() {
     ctx.font = '72px ' + curFont;
     currentTextSpot = calculateSentenceStart(Sentences[0]);
     // bgcolor = getRandomRgb(0, 64);
+
+    window.speechSynthesis.onvoiceschanged = function() {
+        voices = window.speechSynthesis.getVoices().filter(function(v) {
+            return v.lang.startsWith('en');
+        });
+    };
 }
 
 function Update() {
@@ -179,16 +186,6 @@ function DrawGame() {
 //#endregion
 
 //#region Initialization
-window.onload = function() {
-    window.addEventListener('resize', ResizeGame);
-    window.addEventListener('click', HandleMouse);
-    window.addEventListener('keydown', HandleKeys);
-
-    // Do initialization here
-    ResizeGame();
-    DrawScreen();
-    InitGame();
-};
 //#endregion
 
 //#region Handlers
@@ -371,16 +368,23 @@ const previousNote = {
     octave: null,
 };
 var keyChangeCount = 0;
-var moveDir =
 
-    document.getElementById('start').addEventListener('click', (e) => {
-        e.target.style.display = 'none';
-        changeKey();
-        player = new Tone.Player('res/shrdlu_drums.wav').connect(analyser).toDestination();
-        // play as soon as the buffer is loaded
-        player.loop = true;
-        player.volume.value = -6;
-    });
+document.getElementById('start').addEventListener('click', (e) => {
+    e.target.style.display = 'none';
+    changeKey();
+    window.addEventListener('resize', ResizeGame);
+    window.addEventListener('click', HandleMouse);
+    window.addEventListener('keydown', HandleKeys);
+
+    // Do initialization here
+    ResizeGame();
+    DrawScreen();
+    InitGame();
+    player = new Tone.Player('res/shrdlu_drums.wav').connect(analyser).toDestination();
+    // play as soon as the buffer is loaded
+    player.loop = true;
+    player.volume.value = -6;
+});
 
 Tone.Transport.bpm.value = 120;
 
@@ -534,6 +538,20 @@ function triggerBackgroundChord() {
 function startAffirmations() {
     if (!midSentence) {
         midSentence = true;
+
+        setTimeout(() => {
+            let msgText = Sentences[0];
+            if (Sentences[0].startsWith('ETA')) {
+                msgText = "Etta oin sured loo";
+            }
+            let msg = new SpeechSynthesisUtterance(msgText);
+            msg.rate = 0.6;
+            msg.volume = 0.75;
+            // Get a random voice
+            msg.voice = voices[Math.floor(Math.random() * voices.length)];
+            window.speechSynthesis.speak(msg);
+        }, 500);
+
         setTimeout(stepAffirmation, 500);
     }
 }
