@@ -1,7 +1,7 @@
 // Initialize the canvas
 const PORTRAIT = 1;
 const LANDSCAPE = 0;
-const GAMESIZEX = 1080;
+const GAMESIZEX = 1920;
 const GAMESIZEY = 1080;
 const DIRECTIONS = ["N", "W", "S", "E"];
 const DIR_ARROWS = ["↑", "←", "↓", "→"];
@@ -30,6 +30,8 @@ var bghue = 0;
 var basehue = 0;
 var size = 10;
 var nextUserDir = "";
+var homeX = 960;
+var homeY = 540;
 
 // Music stuff
 const MAJOR = [0, 4, 7, 12];
@@ -39,6 +41,7 @@ const ROOTNOTES = [
 ];
 
 const SAYINGS = [
+    "",
     "Use Arrow Keys or 'L' / 'R' to choose the next direction",
     "The decisions you make will determine the future.",
     "Choosing not to decide is a decision by itself.",
@@ -61,7 +64,7 @@ const songPath = {
     "B": {
         "transpose": 7,
         "tones": MAJOR,
-        "next": ["C", "E", "D"],
+        "next": ["C", "H", "D"],
     },
     "C": {
         "transpose": 4,
@@ -86,7 +89,7 @@ const songPath = {
     "G": {
         "transpose": 7,
         "tones": MAJOR,
-        "next": ["C", "H", "D"],
+        "next": ["H", "H", "H"],
     },
     "H": {
         "transpose": 0,
@@ -176,8 +179,8 @@ function KeyDown(e) {
 
 function DrawGame() {
     // Draw the map
-    let mapX = GAMESIZEX / 2;
-    let mapY = GAMESIZEY / 2;
+    let mapX = homeX;
+    let mapY = homeY;
 
     // Draw the lines first
     facing = 0;
@@ -220,8 +223,8 @@ function DrawGame() {
         ctx.stroke();
     }
     // Then the circles
-    mapX = GAMESIZEX / 2;
-    mapY = GAMESIZEY / 2;
+    mapX = homeX;
+    mapY = homeY;
     hue = basehue;
     facing = 0;
     for (let i = 0; i < nodes.length; i++) {
@@ -288,6 +291,7 @@ function DrawGame() {
 function Init() {
     const now = Tone.now();
     Tone.Transport.start();
+    Tone.Transport.bpm.value = 150;
 
     ChordSynth = new Tone.PolySynth().toDestination();
     ChordSynth.set({
@@ -406,8 +410,10 @@ function PlayNote() {
         size = 10;
         basehue = hue;
         console.log(`Root Steps: ${RootSteps}`);
+        homeX = (960 / 2) + Math.floor(Math.random() * 960);
+        homeY = (540 / 2) + Math.floor(Math.random() * 540);
     }
-    window.setTimeout(PlayNote, 2000);
+    window.setTimeout(PlayNote, 1600);
 }
 
 function playPart(curTrans, intervals) {

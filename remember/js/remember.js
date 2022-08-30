@@ -63,8 +63,8 @@ var Sentences = [
 
     'Hey.',
     ' ',
-    'I believe',
-    'in you.',
+    'I believe in you,',
+    'and I love you.',
 
     ' ',
     ' ',
@@ -210,17 +210,17 @@ function DrawScreen() {
     Update();
 
     // Clear the little canvas
-    ctx.globalAlpha = 0.02;
-    ctx.fillStyle = bgcolor;
-    ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
-    ctx.globalAlpha = 1;
+    // ctx.globalAlpha = 0.02;
+    // ctx.fillStyle = bgcolor;
+    // ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
+    // ctx.globalAlpha = 1;
 
     // Draw the game elements
     DrawGame();
 
     // Blit to the big canvas
-    dstctx.fillStyle = bgcolor;
-    dstctx.fillRect(0, 0, dstCanvas.width, dstCanvas.height);
+    //dstctx.fillStyle = bgcolor;
+    //dstctx.fillRect(0, 0, dstCanvas.width, dstCanvas.height);
     dstctx.drawImage(srcCanvas, 0, 0, srcCanvas.width, srcCanvas.height, screenOffsetX, screenOffsetY, newGameWidth, newGameHeight);
     window.requestAnimationFrame(DrawScreen);
 }
@@ -426,10 +426,10 @@ const delay = new Tone.PingPongDelay('4n', 0.2);
 const reverb = new Tone.Reverb(6.5).toDestination();
 const analyser = new AnalyserByteData('fft', 256);
 
-bgSynth.connect(chorus);
+//synth.connect(chorus);
 chorus.connect(widener);
 synth.connect(delay);
-delay.connect(reverb);
+//delay.connect(reverb);
 synth.connect(reverb);
 bgSynth.connect(reverb);
 bgSynth.connect(delay);
@@ -511,8 +511,6 @@ function changeKey() {
         }
     }
     triggerBackgroundChord();
-    const now = Tone.now();
-    Tone.Transport.start();
     isPulsingIn = true;
 
     setTimeout(() => {
@@ -531,7 +529,7 @@ function triggerBackgroundChord() {
         baseNoteFrequency.transpose(12 + GlobalTransposeOffset),
         baseNoteFrequency.transpose(4 + GlobalTransposeOffset),
     ];
-    bgSynth.triggerAttack(notes);
+    bgSynth.triggerAttackRelease(notes, "1:0");
     isBackgroundPlaying = true;
 };
 
@@ -546,9 +544,9 @@ function startAffirmations() {
             }
             let msg = new SpeechSynthesisUtterance(msgText);
             msg.rate = 0.6;
-            msg.volume = 0.75;
+            msg.volume = 0.9;
             // Get a random voice
-            msg.voice = voices[Math.floor(Math.random() * voices.length)];
+            msg.voice = voices[2];
             window.speechSynthesis.speak(msg);
         }, 500);
 
@@ -618,7 +616,6 @@ function handleLetter(char) {
             const note = `${baseNote}${octave}`;
             const now = Tone.now();
             if (!isBackgroundPlaying) {
-                Tone.Transport.start();
                 isPulsingIn = true;
                 triggerBackgroundChord();
             }
@@ -628,9 +625,8 @@ function handleLetter(char) {
                 splitTransposedNote[1] :
                 '';
             const transposedBaseNote = splitTransposedNote[0] + accidental;
-            setTimeout(() => {
-                synth.triggerAttackRelease(`${transposedBaseNote}${octave}`, '32n');
-            }, 250 * i++);
+            i++;
+            synth.triggerAttackRelease(`${transposedBaseNote}${octave}`, '32n', '+0.' + (250 * i));
         });
     } else if (baseNotes.length == 1) {
         baseNotes.forEach(baseNote => {
@@ -656,7 +652,7 @@ function handleLetter(char) {
                 splitTransposedNote[1] :
                 '';
             const transposedBaseNote = splitTransposedNote[0] + accidental;
-            synth.triggerAttackRelease(`${transposedBaseNote}${octave}`, '16n');
+            synth.triggerAttackRelease(`${transposedBaseNote}${octave}`, '16n', '+0.250');
         });
     }
 

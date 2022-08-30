@@ -1,0 +1,496 @@
+const PORTRAIT = 1;
+const LANDSCAPE = 0;
+const GAMESIZEX = 1920;
+const GAMESIZEY = 1080;
+
+// Initialize the canvas
+var srcCanvas = document.createElement('canvas');
+srcCanvas.width = GAMESIZEX;
+srcCanvas.height = GAMESIZEY;
+var ctx = srcCanvas.getContext('2d'); // All game drawing takes place on this context
+var dstCanvas = document.getElementById('canvas');
+var dstctx = dstCanvas.getContext('2d'); // This is the target canvas that fills the window
+var screenOffsetX = 0;
+var screenOffsetY = 0;
+var gameScale = 0;
+var newGameWidth = 0;
+var newGameHeight = 0;
+var dscale = srcCanvas.width / srcCanvas.height;
+var bgcolor = '#333333';
+var screenOrientation = LANDSCAPE; // 0 Horiz, 1 Vert
+var ModalUp = false;
+
+var songCanvs = [];
+var songCtx = [];
+var bgCols = [];
+
+var frame = 0;
+var decidePoints = [];
+var decideLastX = 0;
+var decideLastY = 0;
+
+var connectIns = 'A';
+var connectAngle = 0;
+var connectDelta = 11;
+var connectX = 150;
+var connectY = 350;
+
+var centerStars = [];
+//#region Game logic goes here
+
+function InitGame() {
+    connectIns = replaceAll(connectIns, rules);
+    connectIns = replaceAll(connectIns, rules);
+    connectIns = replaceAll(connectIns, rules);
+    connectIns = replaceAll(connectIns, rules);
+    connectIns = replaceAll(connectIns, rules);
+    connectIns = 'R' + connectIns;
+
+    for (let i = 0; i < 500; i++) {
+        centerStars.push({
+            x: 320,
+            y: 180,
+            dx: (16 / 9) * (0.5 - Math.random()),
+            dy: 0.5 - Math.random(),
+            col: RandomRangedRgb(100, 255)
+        });
+    }
+
+    for (let i = 0; i < 9; i++) {
+        songCanvs[i] = document.createElement('canvas');
+        songCanvs[i].width = 640;
+        songCanvs[i].height = 360;
+        songCtx[i] = songCanvs[i].getContext('2d');
+
+        bgCols[i] = RandomRangedRgb(0, 75);
+    }
+    // bgcolor = getRandomRgb(0, 64);
+}
+
+function Update() {
+    // Game logic here
+}
+
+function DrawPolygon(context, x, y, n, r, deg) {
+    let rad = deg * Math.PI / 180;
+    context.beginPath();
+    context.lineWidth = 5;
+    context.strokeStyle = '#555555';
+    context.moveTo(x + r * Math.cos(rad), y + r * Math.sin(rad));
+    for (let i = 1; i < n; i++) {
+        context.lineTo(x + r * Math.cos(rad + (i * 2 * Math.PI / n)), y + r * Math.sin(rad + (i * 2 * Math.PI / n)));
+    }
+    context.closePath();
+    context.stroke();
+}
+
+function DrawRemember() {
+    songCtx[8].fillStyle = bgCols[8];
+    songCtx[8].fillRect(0, 0, 640, 360);
+
+    for (let i = 0; i < 32; i++) {
+        let color = (frame + (i * 360 / 32)) % 360;
+        songCtx[8].fillStyle = 'hsl(' + color + ', 50%, 33%)';
+        let height = Math.sin((frame + i) / 25) * 50 + 100;
+        songCtx[8].fillRect((20 * i) + 1, (360 - height), 18, height);
+    }
+    songCtx[8].fillStyle = '#FFFFFF';
+    songCtx[8].font = '100px Potra Light';
+    songCtx[8].textAlign = 'center';
+    songCtx[8].textBaseline = 'middle';
+    songCtx[8].fillText('Remember', 320, 180);
+    songCtx[8].strokeStyle = '#AAAAAA';
+    songCtx[8].lineWidth = 3;
+    songCtx[8].strokeRect(0, 0, 640, 360);
+}
+
+function DrawGame() {
+    // Draw the "Align" canvas
+    DrawAlign();
+
+    // Draw the "Decide" canvas
+    DrawDecide();
+
+    // Draw the "Connect" canvas
+    DrawConnect();
+
+    // Draw the "Center" canvas
+    DrawCenter();
+
+    // Draw the "Remember" canvas
+    DrawRemember();
+
+    // Game element drawing goes here
+    for (let i = 0; i < 9; i++) {
+        let xPos = (i % 3) * 640;
+        let yPos = Math.floor(i / 3) * 360;
+        ctx.drawImage(songCanvs[i], xPos, yPos);
+    }
+
+    frame++;
+}
+
+//#endregion
+
+//#region Initialization
+window.onload = function() {
+    window.addEventListener('resize', ResizeGame);
+    window.addEventListener('click', HandleMouse);
+    window.addEventListener('keydown', HandleKeys);
+
+    // Do initialization here
+    InitGame();
+    ResizeGame();
+    DrawScreen();
+};
+
+function DrawAlign() {
+    songCtx[1].fillStyle = bgCols[1];
+    songCtx[1].fillRect(0, 0, 640, 360);
+    DrawPolygon(songCtx[1], 320, 180, 3, 170, frame);
+    DrawPolygon(songCtx[1], 320, 180, 5, 170, -frame);
+    songCtx[1].fillStyle = '#FFFFFF';
+    songCtx[1].font = '100px Potra Light';
+    songCtx[1].textAlign = 'center';
+    songCtx[1].textBaseline = 'middle';
+    songCtx[1].fillText('Align', 320, 180);
+    songCtx[1].strokeStyle = '#AAAAAA';
+    songCtx[1].lineWidth = 3;
+    songCtx[1].strokeRect(0, 0, 640, 360);
+}
+
+function DrawConnect() {
+    let didDraw = 0;
+
+    songCtx[6].strokeStyle = RandomRangedRgb(50, 100);
+    songCtx[6].beginPath();
+    songCtx[6].globalCompositeOperation = 'lighter';
+
+
+    while (!didDraw) {
+        let command = connectIns.charAt(0);
+        let dx = incX(connectAngle, connectDelta);
+        let dy = incY(connectAngle, connectDelta);
+
+        switch (command) {
+            case 'F':
+                songCtx[6].moveTo(connectX, connectY);
+                connectX += dx;
+                connectY += dy;
+                songCtx[6].lineTo(connectX, connectY);
+                songCtx[6].stroke();
+                didDraw = true;
+                break;
+            case '+':
+                connectAngle -= Math.PI / 2;
+                break;
+            case '-':
+                connectAngle += Math.PI / 2;
+                break;
+            case 'R':
+                connectAngle = 0;
+                songCtx[6].moveTo(150, 350);
+                connectX = 150;
+                connectY = 350;
+                didDraw = true;
+                songCtx[6].globalCompositeOperation = 'source-over';
+                songCtx[6].fillStyle = bgCols[6];
+                songCtx[6].fillRect(0, 0, 640, 360);
+                songCtx[6].globalCompositeOperation = 'lighter';
+                songCtx[6].fillStyle = '#FFFFFF';
+                songCtx[6].font = '100px Potra Light';
+                songCtx[6].textAlign = 'center';
+                songCtx[6].textBaseline = 'middle';
+                songCtx[6].fillText('Connect', 320, 180);
+                break;
+
+        }
+        connectIns = connectIns.substring(1) + command;
+    }
+
+
+    songCtx[6].strokeStyle = '#AAAAAA';
+    songCtx[6].lineWidth = 3;
+    songCtx[6].strokeRect(0, 0, 640, 360);
+}
+
+function DrawCenter() {
+    songCtx[4].fillStyle = '#000000';
+    songCtx[4].fillRect(0, 0, 640, 360);
+    for (let i = 0; i < centerStars.length; i++) {
+        let star = centerStars[i];
+        songCtx[4].fillStyle = star.col;
+        songCtx[4].fillRect(star.x, star.y, 1, 1);
+        star.x += star.dx;
+        star.y += star.dy;
+        star.dx *= 1.01;
+        star.dy *= 1.01;
+        if (star.x < 0 || star.x > 640 || star.y < 0 || star.y > 360) {
+            star.x = 320;
+            star.y = 180;
+            star.dx = (16 / 9) * (0.5 - Math.random());
+            star.dy = 0.5 - Math.random();
+            star.col = RandomRangedRgb(100, 255);
+        }
+    }
+
+    songCtx[4].fillStyle = '#FFFFFF';
+    songCtx[4].textAlign = 'center';
+    songCtx[4].textBaseline = 'middle';
+    songCtx[4].font = '48px Potra Light';
+    songCtx[4].fillText('THE GOOD CHEMICALS', 320, 130);
+    songCtx[4].font = '64px Potra Light';
+    songCtx[4].fillText('ETAOIN   SHRDLU', 320, 230);
+    songCtx[4].strokeStyle = '#AAAAAA';
+    songCtx[4].lineWidth = 3;
+    songCtx[4].strokeRect(0, 0, 640, 360);
+
+    songCtx[4].strokeStyle = '#AAAAAA';
+    songCtx[4].lineWidth = 3;
+    songCtx[4].strokeRect(0, 0, 640, 360);
+}
+
+function DrawDecide() {
+    songCtx[3].fillStyle = bgCols[3];
+    songCtx[3].fillRect(0, 0, 640, 360);
+
+    if (frame % 30 == 0) {
+        if (decidePoints.length == 0 ||
+            decideLastX < 0 ||
+            decideLastY < 0 ||
+            decideLastX > 639 ||
+            decideLastY > 359) {
+            decidePoints = [];
+            decidePoints.push({
+                x: 320,
+                y: 180,
+                c: 'hsl(' + (Math.floor(Math.random() * 360)) + ', 100%, 100%)',
+            });
+            decideLastX = 320;
+            decideLastY = 180;
+        } else {
+            switch (Math.floor(Math.random() * 4)) {
+                case 0:
+                    decideLastX += 30;
+                    break;
+                case 1:
+                    decideLastX -= 30;
+                    break;
+                case 2:
+                    decideLastY += 30;
+                    break;
+                case 3:
+                    decideLastY -= 30;
+                    break;
+            }
+            decidePoints.push({
+                x: decideLastX,
+                y: decideLastY,
+                c: 'hsl(' + (Math.floor(Math.random() * 360)) + ', 100%, 50%)',
+            });
+            if (decidePoints.length > 16) {
+                decidePoints.shift();
+            }
+        }
+    }
+
+    songCtx[3].strokeStyle = '#AAAAAA';
+    songCtx[3].lineWidth = 3;
+    songCtx[3].beginPath();
+    // Draw the lines
+    if (decidePoints.length > 1) {
+        songCtx[3].moveTo(decidePoints[0].x, decidePoints[0].y);
+    }
+    for (let i = 0; i < decidePoints.length; i++) {
+        songCtx[3].lineTo(decidePoints[i].x, decidePoints[i].y);
+    }
+    songCtx[3].stroke();
+    // Draw the points
+    songCtx[3].fillStyle = '#000000';
+
+    for (let i = 0; i < decidePoints.length; i++) {
+        songCtx[3].strokeStyle = decidePoints[i].c;
+        songCtx[3].beginPath();
+        songCtx[3].arc(decidePoints[i].x, decidePoints[i].y, 7, 0, 2 * Math.PI);
+        songCtx[3].fill();
+        songCtx[3].stroke();
+    }
+
+    songCtx[3].fillStyle = '#FFFFFF';
+    songCtx[3].font = '100px Potra Light';
+    songCtx[3].textAlign = 'center';
+    songCtx[3].textBaseline = 'middle';
+    songCtx[3].fillText('Decide', 320, 180);
+    songCtx[3].strokeStyle = '#AAAAAA';
+    songCtx[3].lineWidth = 3;
+    songCtx[3].strokeRect(0, 0, 640, 360);
+}
+
+//#endregion
+
+//#region Handlers
+function HandleMouse(e) {
+    if (ModalUp) return; // Ignore the mouse if a Modal is currently displayed
+    // mX and mY are Mouse X and Y in "Source Screen" coordinates
+    let mX = (e.offsetX - screenOffsetX) / gameScale;
+    let mY = (e.offsetY - screenOffsetY) / gameScale;
+
+    if (mX < 0 || mY < 0) return; // Ignore if the mouse is outside the game area
+    if (mX > 1919 || mY > 1079) return; // Ignore if the mouse is outside the game area
+
+    let cY = Math.floor(mY / 360);
+    let cX = Math.floor(mX / 640);
+
+    switch ((3 * cY) + cX) {
+        case 0:
+            console.log("0");
+            break;
+        case 1:
+            window.location.href = "align";
+            break;
+        case 2:
+            console.log("2");
+            break;
+        case 3:
+            window.location.href = "decide";
+            break;
+        case 4:
+            modalUp = true;
+            MicroModal.show('info-modal', {
+                onClose: modal => { modalUp = false; },
+                disableFocus: true,
+            });
+            break;
+        case 5:
+            console.log("5");
+            break;
+        case 6:
+            window.location.href = "connect";
+            break;
+        case 7:
+            console.log("7");
+            break;
+        case 8:
+            window.location.href = "remember";
+            break;
+    }
+    // Mouse handling here
+}
+
+function HandleKeys(e) {
+    if (ModalUp) return; // Ignore the keyboard if a Modal is currently displayed
+
+    // Key handling here
+}
+//#endregion
+
+//#region Draw Utilities
+function DrawScreen() {
+    Update();
+
+    // Clear the little canvas
+    ctx.fillStyle = bgcolor;
+    ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
+
+    // Draw the game elements
+    DrawGame();
+
+    // Blit to the big canvas
+    dstctx.fillStyle = bgcolor;
+    dstctx.fillRect(0, 0, dstCanvas.width, dstCanvas.height);
+    dstctx.drawImage(srcCanvas, 0, 0, srcCanvas.width, srcCanvas.height, screenOffsetX, screenOffsetY, newGameWidth, newGameHeight);
+    window.requestAnimationFrame(DrawScreen);
+}
+
+function ResizeGame() {
+    dstCanvas.width = window.innerWidth;
+    dstCanvas.height = window.innerHeight;
+
+    if (dstCanvas.width >= dstCanvas.height) {
+        dscale = GAMESIZEX / GAMESIZEY;
+        screenOrientation = LANDSCAPE;
+        srcCanvas.width = GAMESIZEX;
+        srcCanvas.height = GAMESIZEY;
+        if (dstCanvas.width / dstCanvas.height > dscale) {
+            newGameHeight = dstCanvas.height;
+            newGameWidth = newGameHeight / GAMESIZEY * GAMESIZEX;
+            gameScale = newGameHeight / GAMESIZEY;
+        } else {
+            newGameWidth = dstCanvas.width;
+            newGameHeight = newGameWidth / GAMESIZEX * GAMESIZEY;
+            gameScale = newGameWidth / GAMESIZEX;
+        }
+    } else {
+        dscale = GAMESIZEY / GAMESIZEX;
+        screenOrientation = PORTRAIT;
+        srcCanvas.width = GAMESIZEY;
+        srcCanvas.height = GAMESIZEX;
+        if (dstCanvas.width / dstCanvas.height > dscale) {
+            newGameHeight = dstCanvas.height;
+            newGameWidth = newGameHeight / GAMESIZEX * GAMESIZEY;
+            gameScale = newGameHeight / GAMESIZEX;
+        } else {
+            newGameWidth = dstCanvas.width;
+            newGameHeight = newGameWidth / GAMESIZEY * GAMESIZEX;
+            gameScale = newGameWidth / GAMESIZEY;
+        }
+    }
+
+    screenOffsetX = Math.abs((dstCanvas.width - newGameWidth)) / 2;
+    screenOffsetY = Math.abs((dstCanvas.height - newGameHeight)) / 2;
+}
+//#endregion
+
+//#region General Utility
+function Shuffle(array) {
+    let currentIndex = array.length,
+        randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]
+        ];
+    }
+
+    return array;
+}
+
+function RandomRangedRgb(lo, hi) {
+    var r = (lo + Math.round((hi - lo) * Math.random()));
+    var g = (lo + Math.round((hi - lo) * Math.random()));
+    var b = (lo + Math.round((hi - lo) * Math.random()));
+    return 'rgb(' + r + ', ' + g + ', ' + b + ')';
+}
+
+function QuadLerp(t, x1, x2, x3) {
+    return ((((1 - t) * (1 - t)) * x1) + (2 * (1 - t) * t * x2) + ((t * t) * x3));
+}
+//#endregion
+
+
+const rules = {
+    A: "-BF+AFA+FB-", // Rule 1
+    B: "+AF-BFB-FA+" // Rule 2
+};
+
+function replaceAll(str, mapObj) {
+    var re = new RegExp(Object.keys(mapObj).join("|"), "gi");
+    return str.replace(re, function(matched) {
+        return mapObj[matched];
+    });
+}
+
+function incX(angleRads, stepSize) {
+    return Math.round(Math.cos(angleRads) * stepSize);
+}
+
+function incY(angleRads, stepSize) {
+    return Math.round(Math.sin(angleRads) * stepSize) * -1;
+}

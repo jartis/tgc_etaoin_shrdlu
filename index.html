@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" href="remember/res/potra-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Inline+One&display=swap" rel="stylesheet">
+    <title>HOME | ETAOIN SHRDLU</title>
+</head>
+
+<body style="margin: 0px !important;overflow:hidden;">
+    <div id="canvas-wrap" style="width: 100vw; height: 100vh; margin: 0px !important;overflow:hidden;">
+        <canvas id="canvas" width="1920" height="1080"></canvas>
+        <div id="overlay">
+
+            <div class="modal micromodal-slide" id="info-modal" aria-hidden="true">
+                <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+                    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+                        <header class="modal__header">
+                            <h2 class="modal__title" id="info-modal-title">
+                                ETAOIN SHRDLU
+                            </h2>
+                            <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+                        </header>
+                        <main class="modal__content" id="info-modal-content">
+                            <p>
+                                <b>ETAOIN SHRDLU</b> is a project about how the world impacts you, and how you impact the world. It is built on a simple premise: Care. Care for yourself, care for others, care about what you're doing, care about how you
+                                are feeling.
+                            </p>
+                            <p>
+                                The phrase <b>ETAOIN SHRDLU</b> is a relic from the early days of typesetting. The most common letters were arranged in that order, to make them easier to grab when putting down a new sentence. Much like those are the first
+                                letters one would reach for when laying out type, the actions here are the common ones that we all face every day. <b>ETAOIN SHRDLU</b> is my way of bringing a note of positivity into each of those actions.
+                                <hr>
+                                <p>
+                                    The
+                                    <a style="color: inherit; text-decoration: inherit;" href="beware"><s>nine</s></a> eight installations presented here are all interactive or random in some way. The accompanying album and music videos are all presentations
+                                    capturing one moment, one particular embodiment, of a piece of work. The website is built to allow you to make your own experiences for these. The differences in each run are part of the project, part of the fun, and
+                                    a way to engage with them - and make them your own.
+                                </p>
+                                <hr>
+                                <p>
+                                    <b>ETAOIN SHRDLU</b> would not exist were it not for the people I care about, and the people that care about me. There are far too many to list them all, but I am hopeful they know who they are. I do have a few specific
+                                    people to call out:
+                                </p>
+                                <ul>
+                                    <li>
+                                        Thank you Bean, for being my favorite person and for always being excited about what I'm working on. I love you!
+                                    </li>
+                                    <li>
+                                        Thank you Bobby, for coaching that extends beyond the 9-5, and always inspiring me to be a person I'm proud of.
+                                    </li>
+                                    <li>
+                                        Thank you Genpo, for putting up with my weirdness and reminding me that we all have something to share with each other.
+                                    </li>
+                                    <li>
+                                        Thank you PD Crew, for being the best support group ever, regardless of what any of us need support in.
+                                    </li>
+                                    <li>
+                                        Thank you to my family, especially the ones with whom I don't share DNA - I couldn't do ANYTHING without y'all.
+                                    </li>
+                                    <li>
+                                        And thank you to my <a href="https://patreon.com/jartis">Patrons</a> for their support in putting this together:
+                                        <ul>
+                                            <li>Joseph Maxwell</li>
+                                            <li>M</li>
+                                            <li>C. 'Uberfuzzy.ninja' Stafford</li>
+                                            <li>DowntownCrowd</li>
+                                            <li>Kevin Cooney</li>
+                                            <li>BJ Ward</li>
+                                            <li>AX Kuhn</li>
+                                            <li>Doe</li>
+                                        </ul>
+                                        I hope you feel like you are getting something rewarding out of your continued support of my wild ideas.
+                                    </li>
+                                </ul>
+                            </p>
+                            <hr>
+                            <p>Follow my other projects at <a href="https://jartis.dev">jartis.dev</a></p>
+                            <hr> 🦥💘🐸
+                        </main>
+                        <footer class="modal__footer ">
+                            <button data-micromodal-close class="modal__btn modal__btn-primary ">OK</button>
+                        </footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js "></script>
+    <script src="shrdlu.js"></script>
+</body>
+
+</html>
