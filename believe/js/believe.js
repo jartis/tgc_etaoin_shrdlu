@@ -16,37 +16,246 @@ var gameScale = 0;
 var newGameWidth = 0;
 var newGameHeight = 0;
 var dscale = srcCanvas.width / srcCanvas.height;
-var bgcolor = '#333333';
+var bgcolor = '#000000';
 var screenOrientation = LANDSCAPE; // 0 Horiz, 1 Vert
 var ModalUp = false;
+var frame = 0;
+var beat = 0;
+
+var nums = [];
+var numsIndex = 0;
+
+var notesOn = [];
+
+const BPM = 125;
+const STEPMS = 480;
+var XD = 0;
+
+var notes = ['C3', 'D3', 'E3', 'G3', 'C4', 'D4', 'E4', 'G4'];
+var bassSynth;
+var leadSynth;
+var currentTranspose = 0;
+const randTrans = -6 + Math.floor(Math.random() * 12);
+const Transpositions = [0, 5, 0, -5];
 
 //#region Game logic goes here
 
-function InitGame() {
-    // bgcolor = getRandomRgb(0, 64);
-}
+function Init() {
+    document.getElementById('start').style.display = 'none';
 
-function Update() {
-    // Game logic here
-}
+    // Do initialization here
+    for (let i = 0; i < 256; i++) {
+        nums.push(intToBinaryArray(i));
+    }
+    //nums.reverse();
+    nums = Shuffle(nums);
+    makeBassSynth();
+    makeLeadSynth();
+    Tone.Transport.bpm.value = BPM;
 
-function DrawGame() {
-    // Game element drawing goes here
-}
-
-//#endregion
-
-//#region Initialization
-window.onload = function() {
     window.addEventListener('resize', ResizeGame);
     window.addEventListener('click', HandleMouse);
     window.addEventListener('keydown', HandleKeys);
 
-    // Do initialization here
-    InitGame();
     ResizeGame();
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
     DrawScreen();
-};
+    window.setTimeout(stepNotes, 480);
+    // bgcolor = getRandomRgb(0, 64);
+}
+
+function stepNotes() {
+    beat++;
+    let checkFunc = getFullList;
+    if (numsIndex == 287) {
+        let note = Tone.Frequency("C3").transpose(randTrans - 12).toNote();
+        bassSynth.triggerAttackRelease(note, "2m");
+        window.setTimeout(() => {
+            for (let i = 0; i < 8; i++) {
+                notesOn[i] = false;
+            }
+        }, 3840);
+    } else {
+        if (numsIndex > 287) {
+            checkFunc = getNothing;
+        } else if (numsIndex > 191) {
+            if (numsIndex % 4 == 0) {
+                checkFunc = getChangedList;
+            } else {
+                checkFunc = getSingleList;
+            }
+        } else if (numsIndex > 127) {
+            checkFunc = getTurnedOnList;
+        } else if (numsIndex > 63) {
+            checkFunc = getChangedList;
+        }
+        if (numsIndex)
+            XD = Math.floor(Math.random() * 3) - 1;
+        for (let i = 0; i < 8; i++) {
+            notesOn[i] = false;
+        }
+        let list = checkFunc(nums[numsIndex % 255], nums[(numsIndex + 1) % 255])
+        if (list.length == 0 && numsIndex < 191) {
+            let t = nums[(numsIndex + 1) % 255];
+            for (let i = 0; i < 8; i++) {
+                if (t[i]) {
+                    list.push(i);
+                }
+            }
+        }
+        let theseNotes = [];
+        let octPose = -12;
+        list.forEach(i => {
+            notesOn[i] = true;
+            let n = Tone.Frequency(notes[i]).transpose(Transpositions[currentTranspose] + randTrans + octPose).toNote();
+            theseNotes.push(n);
+            octPose = 12;
+        });
+
+        let durs = [];
+        for (let i = 0; i < list.length; i++) {
+            durs.push('8n');
+        }
+        if (list.length > 0) {
+            durs[0] = '2n';
+        }
+
+        if (theseNotes.length > 0) {
+            bassSynth.triggerAttackRelease(theseNotes.shift(), durs.shift());
+        }
+        leadSynth.triggerAttackRelease(theseNotes, durs);
+        numsIndex++;
+        currentTranspose = Math.floor(numsIndex / 32) % Transpositions.length;
+        if (numsIndex >= nums.length) {
+            //numsIndex = 0;
+        }
+        window.setTimeout(stepNotes, STEPMS);
+    }
+}
+
+function makeLeadSynth() {
+    leadSynth = new Tone.PolySynth(Tone.FMSynth).toDestination();
+    leadSynth.set({
+        harmonicity: 8,
+        modulationIndex: 2,
+        oscillator: {
+            type: "sine"
+        },
+        envelope: {
+            attack: 0.001,
+            decay: 2,
+            sustain: 0.1,
+            release: 2
+        },
+        modulation: {
+            type: "square"
+        },
+        modulationEnvelope: {
+            attack: 0.002,
+            decay: 0.2,
+            sustain: 0,
+            release: 0.2
+        }
+    });
+    leadSynth.volume.value = -10;
+}
+
+function makeBassSynth() {
+    bassSynth = new Tone.PolySynth(Tone.FMSynth).toDestination();
+    bassSynth.volume.value = -12;
+    bassSynth.set({
+        harmonicity: 3.01,
+        modulationIndex: 14,
+        oscillator: {
+            type: "triangle"
+        },
+        envelope: {
+            attack: 0.2,
+            decay: 0.3,
+            sustain: 0.9,
+            release: 1.2
+        },
+        modulation: {
+            type: "square"
+        },
+        modulationEnvelope: {
+            attack: 0.01,
+            decay: 0.5,
+            sustain: 0.2,
+            release: 0.1
+        }
+    });
+}
+
+function intToBinaryArray(i) {
+    return [
+        (i & 1) > 0,
+        (i & 2) > 0,
+        (i & 4) > 0,
+        (i & 8) > 0,
+        (i & 16) > 0,
+        (i & 32) > 0,
+        (i & 64) > 0,
+        (i & 128) > 0
+    ];
+}
+
+function getFullList(oldState, newState) {
+    let res = [];
+    for (let i = 0; i < 8; i++) {
+        if (oldState[i]) { res.push(i); }
+    }
+    return res;
+}
+
+function getTurnedOnList(oldState, newState) {
+    let res = [];
+    for (let i = 0; i < 8; i++) {
+        if (newState[i] && !oldState[i]) { res.push(i); }
+    }
+    return res;
+}
+
+function getChangedList(oldState, newState) {
+    let res = [];
+    for (let i = 0; i < 8; i++) {
+        if (newState[i] != oldState[i]) { res.push(i); }
+    }
+    return res;
+}
+
+function getSingleList(oldState, newState) {
+    for (let i = 0; i < 8; i++) {
+        if (newState[i] && !oldState[i]) { return [i]; }
+    }
+    return [];
+}
+
+function getNothing() {
+    return [];
+}
+
+function Update() {
+    frame++;
+    // Game logic here
+}
+
+function DrawGame() {
+    ctx.drawImage(srcCanvas, XD, -1, srcCanvas.width, srcCanvas.height);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, srcCanvas.height - 1, srcCanvas.width, 1);
+    for (let i = 0; i < 8; i++) {
+        if (notesOn[i]) {
+            //let r = 
+            let hue = ((45 * i) + frame + (45 * currentTranspose)) % 360;
+            ctx.fillStyle = 'hsl(' + hue + ', 50%, 50%)';
+            ctx.fillRect((i * srcCanvas.width / 8) + (srcCanvas.width / 16) - (beat), srcCanvas.height - 1, (beat * 2), 1);
+        }
+    }
+    // Game element drawing goes here
+}
+
 //#endregion
 
 //#region Handlers
@@ -69,10 +278,6 @@ function HandleKeys(e) {
 //#region Draw Utilities
 function DrawScreen() {
     Update();
-
-    // Clear the little canvas
-    ctx.fillStyle = bgcolor;
-    ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
 
     // Draw the game elements
     DrawGame();

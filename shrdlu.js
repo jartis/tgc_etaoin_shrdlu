@@ -20,7 +20,7 @@ var bgcolor = '#333333';
 var screenOrientation = LANDSCAPE; // 0 Horiz, 1 Vert
 var ModalUp = false;
 
-var songCanvs = [];
+var songCanvas = [];
 var songCtx = [];
 var bgCols = [];
 
@@ -35,7 +35,15 @@ var connectDelta = 11;
 var connectX = 150;
 var connectY = 350;
 
+var believeDir = 0;
+
 var centerStars = [];
+
+var nameOpac = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0
+];
+var lastCell = 4;
+
 //#region Game logic goes here
 
 function InitGame() {
@@ -57,17 +65,29 @@ function InitGame() {
     }
 
     for (let i = 0; i < 9; i++) {
-        songCanvs[i] = document.createElement('canvas');
-        songCanvs[i].width = 640;
-        songCanvs[i].height = 360;
-        songCtx[i] = songCanvs[i].getContext('2d');
-
         bgCols[i] = RandomRangedRgb(0, 75);
+        songCanvas[i] = document.createElement('canvas');
+        songCanvas[i].width = 640;
+        songCanvas[i].height = 360;
+        songCtx[i] = songCanvas[i].getContext('2d');
+        songCtx[i].fillStyle = bgCols[i];
+        songCtx[i].fillRect(0, 0, 640, 360);
     }
     // bgcolor = getRandomRgb(0, 64);
 }
 
 function Update() {
+    for (let i = 0; i < nameOpac.length; i++) {
+        if (nameOpac[i] > 0) {
+            nameOpac[i] -= 0.05;
+        }
+    }
+    if (nameOpac[lastCell] < 1) {
+        nameOpac[lastCell] += 0.15;
+        if (nameOpac[lastCell] > 1) {
+            nameOpac[lastCell] = 1;
+        }
+    }
     // Game logic here
 }
 
@@ -91,17 +111,10 @@ function DrawRemember() {
     for (let i = 0; i < 32; i++) {
         let color = (frame + (i * 360 / 32)) % 360;
         songCtx[8].fillStyle = 'hsl(' + color + ', 50%, 33%)';
-        let height = Math.sin((frame + i) / 25) * 50 + 100;
+        let height = Math.sin(((frame / 2) + i) / 10) * 50 + 100;
         songCtx[8].fillRect((20 * i) + 1, (360 - height), 18, height);
     }
-    songCtx[8].fillStyle = '#FFFFFF';
-    songCtx[8].font = '100px Potra Light';
-    songCtx[8].textAlign = 'center';
-    songCtx[8].textBaseline = 'middle';
-    songCtx[8].fillText('Remember', 320, 180);
-    songCtx[8].strokeStyle = '#AAAAAA';
-    songCtx[8].lineWidth = 3;
-    songCtx[8].strokeRect(0, 0, 640, 360);
+
 }
 
 function DrawGame() {
@@ -120,12 +133,17 @@ function DrawGame() {
     // Draw the "Remember" canvas
     DrawRemember();
 
+    // Draw the "Believe" canvas
+    DrawBelieve();
+
     // Game element drawing goes here
     for (let i = 0; i < 9; i++) {
         let xPos = (i % 3) * 640;
         let yPos = Math.floor(i / 3) * 360;
-        ctx.drawImage(songCanvs[i], xPos, yPos);
+        ctx.drawImage(songCanvas[i], xPos, yPos);
     }
+
+    DrawNames();
 
     frame++;
 }
@@ -136,6 +154,7 @@ function DrawGame() {
 window.onload = function() {
     window.addEventListener('resize', ResizeGame);
     window.addEventListener('click', HandleMouse);
+    window.addEventListener('mousemove', HandleMouse);
     window.addEventListener('keydown', HandleKeys);
 
     // Do initialization here
@@ -144,27 +163,43 @@ window.onload = function() {
     DrawScreen();
 };
 
+function DrawNames() {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '100px Potra Light';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[0] + ')';
+    ctx.fillText('Love', 320, 180);
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[1] + ')';
+    ctx.fillText('Align', 320 + 640, 180);
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[2] + ')';
+    ctx.fillText('Create', 320 + 1280, 180);
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[3] + ')';
+    ctx.fillText('Decide', 320, 180 + 360);
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[5] + ')';
+    ctx.fillText('Believe', 320 + 1280, 180 + 360);
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[6] + ')';
+    ctx.fillText('Connect', 320, 180 + 720);
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[7] + ')';
+    ctx.fillText('Grow', 320 + 640, 180 + 720);
+    ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[8] + ')';
+    ctx.fillText('Remember', 320 + 1280, 180 + 720);
+}
+
 function DrawAlign() {
     songCtx[1].fillStyle = bgCols[1];
     songCtx[1].fillRect(0, 0, 640, 360);
     DrawPolygon(songCtx[1], 320, 180, 3, 170, frame);
     DrawPolygon(songCtx[1], 320, 180, 5, 170, -frame);
-    songCtx[1].fillStyle = '#FFFFFF';
-    songCtx[1].font = '100px Potra Light';
-    songCtx[1].textAlign = 'center';
-    songCtx[1].textBaseline = 'middle';
-    songCtx[1].fillText('Align', 320, 180);
-    songCtx[1].strokeStyle = '#AAAAAA';
-    songCtx[1].lineWidth = 3;
-    songCtx[1].strokeRect(0, 0, 640, 360);
 }
 
 function DrawConnect() {
     let didDraw = 0;
 
-    songCtx[6].strokeStyle = RandomRangedRgb(50, 100);
+    songCtx[6].lineWidth = 3;
+    songCtx[6].strokeStyle = 'hsl(' + ((frame * 3) % 360) + ', 75%, 50%)';
     songCtx[6].beginPath();
-    songCtx[6].globalCompositeOperation = 'lighter';
 
 
     while (!didDraw) {
@@ -197,21 +232,19 @@ function DrawConnect() {
                 songCtx[6].fillStyle = bgCols[6];
                 songCtx[6].fillRect(0, 0, 640, 360);
                 songCtx[6].globalCompositeOperation = 'lighter';
-                songCtx[6].fillStyle = '#FFFFFF';
-                songCtx[6].font = '100px Potra Light';
-                songCtx[6].textAlign = 'center';
-                songCtx[6].textBaseline = 'middle';
-                songCtx[6].fillText('Connect', 320, 180);
                 break;
-
         }
         connectIns = connectIns.substring(1) + command;
     }
+}
 
-
-    songCtx[6].strokeStyle = '#AAAAAA';
-    songCtx[6].lineWidth = 3;
-    songCtx[6].strokeRect(0, 0, 640, 360);
+function DrawBelieve() {
+    if (frame % 20 == 0) {
+        believeDir = Math.floor(Math.random() * 3) - 1;
+    }
+    songCtx[5].drawImage(songCanvas[5], believeDir, -1);
+    songCtx[5].fillStyle = 'hsl(' + (frame % 360) + ', 50%, 50%)';
+    songCtx[5].fillRect(285, 359, 70, 1)
 }
 
 function DrawCenter() {
@@ -315,15 +348,6 @@ function DrawDecide() {
         songCtx[3].fill();
         songCtx[3].stroke();
     }
-
-    songCtx[3].fillStyle = '#FFFFFF';
-    songCtx[3].font = '100px Potra Light';
-    songCtx[3].textAlign = 'center';
-    songCtx[3].textBaseline = 'middle';
-    songCtx[3].fillText('Decide', 320, 180);
-    songCtx[3].strokeStyle = '#AAAAAA';
-    songCtx[3].lineWidth = 3;
-    songCtx[3].strokeRect(0, 0, 640, 360);
 }
 
 //#endregion
@@ -334,47 +358,51 @@ function HandleMouse(e) {
     // mX and mY are Mouse X and Y in "Source Screen" coordinates
     let mX = (e.offsetX - screenOffsetX) / gameScale;
     let mY = (e.offsetY - screenOffsetY) / gameScale;
-
     if (mX < 0 || mY < 0) return; // Ignore if the mouse is outside the game area
     if (mX > 1919 || mY > 1079) return; // Ignore if the mouse is outside the game area
 
     let cY = Math.floor(mY / 360);
     let cX = Math.floor(mX / 640);
 
-    switch ((3 * cY) + cX) {
-        case 0:
-            console.log("0");
-            break;
-        case 1:
-            window.location.href = "align";
-            break;
-        case 2:
-            console.log("2");
-            break;
-        case 3:
-            window.location.href = "decide";
-            break;
-        case 4:
-            modalUp = true;
-            MicroModal.show('info-modal', {
-                onClose: modal => { modalUp = false; },
-                disableFocus: true,
-            });
-            break;
-        case 5:
-            console.log("5");
-            break;
-        case 6:
-            window.location.href = "connect";
-            break;
-        case 7:
-            console.log("7");
-            break;
-        case 8:
-            window.location.href = "remember";
-            break;
+    if (e.type == 'mousemove') {
+        lastCell = ((3 * cY) + cX);
     }
-    // Mouse handling here
+    if (e.type == 'click') {
+        switch ((3 * cY) + cX) {
+            case 0:
+                console.log("0");
+                break;
+            case 1:
+                window.location.href = "align";
+                break;
+            case 2:
+                console.log("2");
+                break;
+            case 3:
+                window.location.href = "decide";
+                break;
+            case 4:
+                modalUp = true;
+                MicroModal.show('info-modal', {
+                    onClose: modal => { modalUp = false; },
+                    disableFocus: true,
+                });
+                break;
+            case 5:
+                window.location.href = "believe";
+                break;
+            case 6:
+                window.location.href = "connect";
+                break;
+            case 7:
+                console.log("7");
+                break;
+            case 8:
+                window.location.href = "remember";
+                break;
+        }
+        // Mouse handling here
+    }
 }
 
 function HandleKeys(e) {
@@ -386,8 +414,6 @@ function HandleKeys(e) {
 
 //#region Draw Utilities
 function DrawScreen() {
-    Update();
-
     // Clear the little canvas
     ctx.fillStyle = bgcolor;
     ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
@@ -399,6 +425,8 @@ function DrawScreen() {
     dstctx.fillStyle = bgcolor;
     dstctx.fillRect(0, 0, dstCanvas.width, dstCanvas.height);
     dstctx.drawImage(srcCanvas, 0, 0, srcCanvas.width, srcCanvas.height, screenOffsetX, screenOffsetY, newGameWidth, newGameHeight);
+    Update();
+
     window.requestAnimationFrame(DrawScreen);
 }
 
