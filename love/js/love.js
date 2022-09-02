@@ -36,6 +36,8 @@ var hearts = [];
 var firstClick = true;
 
 var canAddHeart = true;
+
+var globalTranspose = Math.floor(Math.random() * 12);
 //#region Game logic goes here
 
 var progs = [{
@@ -80,7 +82,7 @@ function stepSeq() {
         if (Math.random() < 0.5) { hearts.push(MakeNewHeart()) };
     }
     let curProg = progs[seqPos];
-    let curNotes = curProg.notes.slice();
+    let curNotes = curProg.notes.map(n => Tone.Frequency(n).transpose(globalTranspose).toNote());
     let curDurs = curProg.durs.slice();
     let curOffsets = curProg.offsets.slice();
     if (seqCount > 7 && hearts.length > 1) {
@@ -100,7 +102,7 @@ function stepSeq() {
         if (seqPos > 1) {
             tpose += 12;
         }
-        let note = Tone.Frequency(curNotes[0]).transpose(tpose);
+        let note = Tone.Frequency(curNotes[0]).transpose(tpose).toNote();
         let dur = (i % 3 == 2) ? '4n' : '4n.';
         let offset = '+0:' + (3 * i - Math.floor(i / 3))
         bassSynth.triggerAttackRelease(note, dur, offset);
@@ -185,7 +187,7 @@ function Update() {
         if (hearts[i].op > 1) {
             // Kaboom!
             launchConfetti(hearts[i].color, hearts[i].x, hearts[i].y + (hearts[i].size / 2));
-            let fNotes = Shuffle(progs[(seqPos + 3) % 4].notes.slice());
+            let fNotes = Shuffle(progs[(seqPos + 3) % 4].notes.map(n => Tone.Frequency(n).transpose(globalTranspose).toNote()));
             let voiceCount = 2;
             let voices = [];
             for (let j = 0; j < voiceCount; j++) {

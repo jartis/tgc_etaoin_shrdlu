@@ -429,7 +429,7 @@ function HandleMouse(e) {
     if (e.type == 'click') {
         switch ((3 * cY) + cX) {
             case 0:
-                console.log("0");
+                window.location.href = "love";
                 break;
             case 1:
                 window.location.href = "align";
