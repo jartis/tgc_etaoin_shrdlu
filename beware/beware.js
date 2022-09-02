@@ -1,3 +1,7 @@
+var KICK;
+var HAT;
+var SHK;
+
 var Sentences = [
     "This place is a message, ",
     "and part of a system of messages. ",
@@ -31,7 +35,7 @@ var Sentences = [
 
     "The danger is still present, ",
     "in your time, ",
-    "as it ws in ours. ",
+    "as it was in ours. ",
     " ",
 
     "The danger is to the body, ",
@@ -67,6 +71,8 @@ var letterVelY = 0.01;
 var keyChangeCount = 0;
 
 var rads = [];
+
+var frame = 0;
 
 // overwrite getValue from tone analyser
 class AnalyserByteData extends Tone.Analyser {
@@ -237,7 +243,7 @@ const keyToPitchDict = {
 };
 
 var player;
-const TEMPO = 180;
+const TEMPO = 200;
 
 // UI
 let words = "";
@@ -248,6 +254,21 @@ const container = document.querySelector(".container");
 const button = document.getElementById("start");
 button.addEventListener("click", () => {
     button.style.display = "none";
+
+    Tone.Transport.bpm.value = TEMPO;
+
+    KICK = new Tone.MembraneSynth({ pitchDecay: 0.1 });
+    KICK.volume.value = -19;
+    var comp = new Tone.Compressor(-30, 12).toDestination();
+    KICK.connect(comp);
+    KICK.connect(reverb);
+
+    HAT = new Tone.NoiseSynth();
+    const filter = new Tone.Filter(8000, "highpass").toDestination();
+    filter.connect(widener);
+    HAT.connect(filter);
+    HAT.volume.value = -10;
+
     changeKey();
     //player = new Tone.Player("./shrdlu_drums.wav").toDestination();
     // play as soon as the buffer is loaded
@@ -363,6 +384,24 @@ function getTPose() {
 const changeKey = () => {
     keyChangeCount++;
     if (keyChangeCount > 0) {
+        if (keyChangeCount > 8) {
+            KICK.triggerAttackRelease("c1", "32n");
+            HAT.triggerAttackRelease("32n", "+0:1");
+            HAT.triggerAttackRelease("32n", "+0:2");
+            HAT.triggerAttackRelease("32n", "+0:3");
+            HAT.triggerAttackRelease("32n", "+1:0");
+            KICK.triggerAttackRelease("c1", "32n", "+1:1");
+            HAT.triggerAttackRelease("32n", "+1:2");
+            if (Math.random() > 0.5) {
+                HAT.triggerAttackRelease("64n", "+1:3:0");
+                HAT.triggerAttackRelease("64n", "+1:3:1");
+                HAT.triggerAttackRelease("64n", "+1:3:2");
+            } else {
+                KICK.triggerAttackRelease("c1", "64n", "+1:3:0");
+                KICK.triggerAttackRelease("c1", "64n", "+1:3:1");
+                KICK.triggerAttackRelease("c1", "64n", "+1:3:2");
+            }
+        }
         if (keyChangeCount % 4 == 0) {
             currentKey = baseKey;
             transposition = 0;
@@ -378,9 +417,9 @@ const changeKey = () => {
             currentKey = transposedBaseNote;
 
             if ((keyChangeCount % 4 == 1) && (keyChangeCount > 8)) {
-                startAffirmations();
+                startPhrases();
             }
-            if ((keyChangeCount % 4 == 1) && (keyChangeCount > 32)) {
+            if ((keyChangeCount % 4 == 1) && (keyChangeCount > 16)) {
                 //if (player.state == "stopped") {
                 //player.start();
                 //}
@@ -396,18 +435,18 @@ const changeKey = () => {
 
     setTimeout(() => {
         changeKey();
-    }, /*2666*/ 2400);
+    }, 2400);
 };
 
-function startAffirmations() {
+function startPhrases() {
     letterVelY = (Math.floor(keyChangeCount / 4) % 2 == 0) ? -0.01 : 0.01;
     if (!midSentence) {
         midSentence = true;
-        stepAffirmation();
+        stepPhrase();
     }
 }
 
-function stepAffirmation() {
+function stepPhrase() {
     if (Sentences.length > 0) {
         if (Sentences[0].length > 0) {
             let char = Sentences[0].substring(0, 1);
@@ -415,7 +454,7 @@ function stepAffirmation() {
 
             let e = new KeyboardEvent('keydown', { key: char });
             handleKey(e);
-            setTimeout(stepAffirmation, 300);
+            setTimeout(stepPhrase, 300);
         } else {
             Sentences.push(Sentences.shift());
             midSentence = false;
@@ -524,8 +563,8 @@ function handleKey(e) {
 let previousTime = 0;
 let lastWidth = 0;
 
-function draw(time) {
-
+function draw() {
+    frame++;
     window.requestAnimationFrame(draw);
 
     context.globalAlpha = 0.01;
@@ -593,13 +632,16 @@ function draw(time) {
     if (messageLetters.length > 0) {
         travDist += 2;
     }
+    let letterCount = 0;
     messageLetters.forEach((letr) => {
+        letterCount++;
+        let offset = (10 * Math.sin((letterCount + frame) * 0.05));
         context.fillStyle = '#000000';
         context.fillText(letr.letter,
-            letr.x + letr.dx, 510);
+            letr.x + letr.dx, 510 + offset);
         context.fillStyle = '#FF0000';
         context.fillText(letr.letter,
-            letr.x, 510);
+            letr.x, 510 + offset);
         letr.x -=
             letr.dx;
         letr.dx *= 0.9985;

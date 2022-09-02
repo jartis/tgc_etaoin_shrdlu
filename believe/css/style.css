@@ -1,54 +1,34 @@
-body,
-html {
+body {
     background-color: #000;
-    margin: 0;
-    padding: 0;
-    font-weight: bold;
-    font-size: 1.25rem;
-    overflow: hidden;
 }
 
-@font-face {
-    font-family: 'potralight';
-    src: url('../res/potra-webfont.woff2') format('woff2'), url('../res/potra-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-.container {
-    color: white;
-    z-index: 10;
+#canvas-wrap {
     position: relative;
-    background-color: transparent;
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+    width: 800px;
+    height: 600px
 }
 
-#canvas {
+#canvas-wrap canvas {
     position: absolute;
     top: 0;
     left: 0;
-    background-color: black;
+    z-index: 0
 }
 
 button {
-    font-size: 30px;
-    font-family: 'Shadows Into Light';
-    line-height: 30px;
+    font-size: 40px;
+    font-family: 'Syne Mono', monospace;
+    line-height: 40px;
     padding: .618em 1em;
     border-radius: 10px 10px 12px 12px;
-    box-shadow: 0px 8px 0px 0px #2980b9, /* button thickness */
+    box-shadow: 0px 8px 0px 0px #600060, /* button thickness */
     0px 0 20px rgba(255, 255, 255, .2) inset, /* inner glow */
     2px 30px 0px rgba(255, 255, 255, .1) inset, /* sublte reflection */
     5px 15px 30px -10px #000;
     /* dark shadow underneath */
-    border: 1px solid #2980b9;
+    border: 1px solid #600060;
     cursor: pointer;
-    background: #3498db;
+    background: #800080;
     color: #ecf0f1;
     text-shadow: 1px 1px 1px #34495e;
     transform: rotateX(5deg);
@@ -65,8 +45,8 @@ button i {
 button:hover {
     margin-top: 15px;
     margin-bottom: 5px;
-    box-shadow: 0px 5px 0px 0px #2980b9, /* button thickness */
-    0px 0 50px rgba(134, 243, 255, 1) inset, /* inner glow */
+    box-shadow: 0px 5px 0px 0px #600060, /* button thickness */
+    0px 0 50px rgba(225, 100, 225, 1) inset, /* inner glow */
     5px 28px 0px rgba(255, 255, 255, .15) inset, /* sublte reflection */
     0px 0px 30px rgba(134, 243, 255, .2), /* outer glow */
     5px 15px 30px -10px #000;
@@ -82,10 +62,10 @@ button:hover i {
 button:active {
     margin-top: 18px;
     margin-bottom: 2px;
-    box-shadow: 0px 2px 0px 0px #2980b9, /* button thickness */
-    0px 0 100px 10px rgba(134, 243, 255, 1) inset, /* inner glow */
+    box-shadow: 0px 2px 0px 0px #600060, /* button thickness */
+    0px 0 100px 10px rgba(255, 200, 255, 1) inset, /* inner glow */
     5px 25px 0px rgba(255, 255, 255, .1) inset, /* sublte reflection */
-    0px 0px 30px rgba(134, 243, 255, .5), /* outer glow */
+    0px 0px 30px rgba(255, 243, 255, .5), /* outer glow */
     5px 15px 30px -10px #000;
     /* dark shadow underneath */
     filter: saturate(1.7);
@@ -93,4 +73,17 @@ button:active {
 
 button:active i {
     transform: rotate(-22deg) translate(2px, -5px) scale(1.3);
+}
+
+.container {
+    color: white;
+    z-index: 10;
+    position: relative;
+    background-color: transparent;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
