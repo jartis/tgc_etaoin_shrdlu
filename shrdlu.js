@@ -136,6 +136,9 @@ function DrawGame() {
     // Draw the "Believe" canvas
     DrawBelieve();
 
+    // Draw the "Love" canvas
+    DrawLove();
+
     // Draw the "Grow" canvas
     DrawGrow();
 
@@ -226,6 +229,28 @@ function DrawGrow() {
     songCtx[7].fillRect(0, 0, 640, 360);
     songCtx[7].globalAlpha = 1;
     growFlower.angle += growFlower.angleMod;
+}
+
+var heartColor = GetRandomPurple();
+
+function GetRandomPurple() {
+    var r = 50 + Math.round(Math.random() * 250);
+    var b = 50 + Math.round(Math.random() * 250);
+    var g = 0;
+
+    return RgbToHex(r, g, b);
+}
+
+function RgbToHex(r, g, b) {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function DrawLove() {
+    songCtx[0].fillStyle = bgCols[0];
+    songCtx[0].fillRect(0, 0, 640, 360);
+    let size = Math.abs(Math.sin((frame / 50)) * 300);
+    if (size < 3) { heartColor = GetRandomPurple(); }
+    DrawHeart(songCtx[0], 320, 180 - (size / 2), size, heartColor);
 }
 
 function DrawConnect() {
@@ -590,7 +615,7 @@ function DrawFlower(fctx, numPetals, radius, x, y, col, angle) {
     fctx.stroke();
 };
 
-function DrawHeart(stx, x, y, size, color) {
+function DrawHeart(ctx, x, y, size, color) {
     let width = height = size;
     ctx.save();
     ctx.beginPath();
@@ -633,8 +658,12 @@ function DrawHeart(stx, x, y, size, color) {
 
     ctx.closePath();
     ctx.strokeStyle = color;
-    ctx.lineWidth = Math.ceil(Math.log(size));
+    ctx.lineCap = 'round';
+    ctx.lineWidth = Math.ceil(3 * Math.log(size));
     ctx.fillStyle = color;
+    ctx.globalAlpha = 0.5;
+    ctx.fill();
+    ctx.globalAlpha = 1;
     ctx.stroke();
     ctx.restore();
 }
