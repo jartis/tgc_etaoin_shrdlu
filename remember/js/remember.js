@@ -546,7 +546,7 @@ function startAffirmations() {
             msg.rate = 0.6;
             msg.volume = 0.9;
             // Get a random voice
-            msg.voice = voices[2];
+            msg.voice = voices[Math.floor(Math.random() * voices.length)];
             window.speechSynthesis.speak(msg);
         }, 500);
 
