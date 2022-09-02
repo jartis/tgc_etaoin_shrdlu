@@ -6,57 +6,42 @@ var Sentences = [
     "This place is a message, ",
     "and part of a system of messages. ",
     "Pay attention to it! ",
-    " ",
-
     "Sending this message ",
+
     "was important to us. ",
     "We considered ourselves to be ",
     "a powerful culture. ",
-
     "This is not a place of honor. ",
+
     "No highly esteemed deed ",
     "is commemorated here. ",
     "Nothing valued is here. ",
-
     "What is here was dangerous ",
+
     "and repulsive to us. ",
     "This message is a warning ",
     "about danger. ",
-
     "The danger is in ",
+
     "a particular location. ",
-    "It increases ",
-    "towards a center. ",
-
-    "The center of danger ",
-    "is here, ",
+    "It increases towards a center. ",
+    "The center of danger is here, ",
     "of a particular size and shape ",
+
     "and below us. ",
-
     "The danger is still present, ",
-    "in your time, ",
-    "as it was in ours. ",
-    " ",
-
+    "in your time, as it was in ours. ",
     "The danger is to the body, ",
-    " ",
+
     "and it can kill. ",
-    " ",
-
     "The form of danger ",
-    "is an emenation ",
-    "of energy. ",
-    " ",
-
+    "is an emenation of energy. ",
     "The danger is unleashed only ",
+
     "if you substantially disturb ",
     "this place physically. ",
-    " ",
-
-    "This place ",
-    "is best shunned ",
-    "and left ",
-    "uninhabited. ",
+    "This place is best shunned ",
+    "and left uninhabited. ",
 
     " ",
     " ",
@@ -243,7 +228,7 @@ const keyToPitchDict = {
 };
 
 var player;
-const TEMPO = 200;
+const TEMPO = 250;
 
 // UI
 let words = "";
@@ -365,8 +350,8 @@ const triggerBackgroundChord = () => {
     let notes = [
         baseNote,
     ];
-    if (keyChangeCount < 180) {
-        if (keyChangeCount < 90) {
+    if (keyChangeCount < 160) {
+        if (keyChangeCount < 100) {
             notes.push(baseNoteFrequency.transpose(9));
             notes.push(baseNoteFrequency.transpose(16));
         } else {
@@ -384,7 +369,7 @@ function getTPose() {
 const changeKey = () => {
     keyChangeCount++;
     if (keyChangeCount > 0) {
-        if (keyChangeCount > 8) {
+        if (keyChangeCount > 8 && keyChangeCount < 160) {
             KICK.triggerAttackRelease("c1", "32n");
             HAT.triggerAttackRelease("32n", "+0:1");
             HAT.triggerAttackRelease("32n", "+0:2");
@@ -435,7 +420,7 @@ const changeKey = () => {
 
     setTimeout(() => {
         changeKey();
-    }, 2400);
+    }, 1920);
 };
 
 function startPhrases() {
@@ -454,7 +439,7 @@ function stepPhrase() {
 
             let e = new KeyboardEvent('keydown', { key: char });
             handleKey(e);
-            setTimeout(stepPhrase, 300);
+            setTimeout(stepPhrase, 240);
         } else {
             Sentences.push(Sentences.shift());
             midSentence = false;
@@ -536,7 +521,7 @@ function handleKey(e) {
                 let len = 32;
                 if (longNote && Math.random() > 0.33) { len = 16; }
                 synth.triggerAttackRelease(`${transposedBaseNote}${octave}`, len + "n");
-            }, 150);
+            }, 60);
         }
 
     } else {
@@ -548,7 +533,7 @@ function handleKey(e) {
                 "";
             const transposedBaseNote = splitTransposedNote[0] + accidental;
             synth.triggerAttackRelease(`${transposedBaseNote}${octave}`, "32n");
-        }, 150);
+        }, 60);
 
         if (Math.random() > 0.33) {
             let len = 32;

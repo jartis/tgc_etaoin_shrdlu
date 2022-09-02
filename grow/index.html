@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Send+Flowers&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="css/style.css">
     <title>Grow | ETAOIN SHRDLU</title>
 </head>
@@ -13,10 +17,14 @@
     <div id="canvas-wrap" style="width: 100vw; height: 100vh; margin: 0px !important;overflow:hidden;">
         <canvas id="canvas" width="1920" height="1080"></canvas>
         <div id="overlay">
+            <div class="container">
+                <!-- 	start typing! -->
+                <button id="start" class="green" onclick="StartThings();">Grow</button>
+            </div>
         </div>
     </div>
-    <script src="js/grow.js "></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.26/Tone.js"></script>
+    <script src="js/grow.js "></script>
 </body>
 
 </html>

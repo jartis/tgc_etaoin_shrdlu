@@ -136,6 +136,12 @@ function DrawGame() {
     // Draw the "Believe" canvas
     DrawBelieve();
 
+    // Draw the "Love" canvas
+    DrawLove();
+
+    // Draw the "Grow" canvas
+    DrawGrow();
+
     // Game element drawing goes here
     for (let i = 0; i < 9; i++) {
         let xPos = (i % 3) * 640;
@@ -192,6 +198,58 @@ function DrawAlign() {
     songCtx[1].fillRect(0, 0, 640, 360);
     DrawPolygon(songCtx[1], 320, 180, 3, 170, frame);
     DrawPolygon(songCtx[1], 320, 180, 5, 170, -frame);
+}
+
+function makeGrowFlower() {
+    return {
+        x: 320,
+        y: 180,
+        radius: 1,
+        numPetals: Math.floor(Math.random() * 8) + 4,
+        col: RandomRangedRgb(100, 255),
+        angle: 0,
+        angleMod: (0.5 - Math.random()) * (Math.PI / 90),
+    };
+}
+
+var growFlower = makeGrowFlower();
+
+function DrawGrow() {
+
+    DrawFlower(songCtx[7], growFlower.numPetals, growFlower.radius, growFlower.x, growFlower.y, growFlower.col, growFlower.angle);
+    growFlower.radius++;
+    if (growFlower.radius > 300) {
+        songCtx[7].fillStyle = bgCols[7];
+        songCtx[7].fillRect(0, 0, 640, 360);
+        growFlower = makeGrowFlower();
+    }
+    songCtx[7].globalAlpha = 0.25;
+    songCtx[7].fillStyle = bgCols[7];
+    songCtx[7].fillRect(0, 0, 640, 360);
+    songCtx[7].globalAlpha = 1;
+    growFlower.angle += growFlower.angleMod;
+}
+
+var heartColor = GetRandomPurple();
+
+function GetRandomPurple() {
+    var r = 50 + Math.round(Math.random() * 250);
+    var b = 50 + Math.round(Math.random() * 250);
+    var g = 0;
+
+    return RgbToHex(r, g, b);
+}
+
+function RgbToHex(r, g, b) {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function DrawLove() {
+    songCtx[0].fillStyle = bgCols[0];
+    songCtx[0].fillRect(0, 0, 640, 360);
+    let size = Math.abs(Math.sin((frame / 50)) * 300);
+    if (size < 3) { heartColor = GetRandomPurple(); }
+    DrawHeart(songCtx[0], 320, 180 - (size / 2), size, heartColor);
 }
 
 function DrawConnect() {
@@ -370,7 +428,7 @@ function HandleMouse(e) {
     if (e.type == 'click') {
         switch ((3 * cY) + cX) {
             case 0:
-                console.log("0");
+                window.location.href = "love";
                 break;
             case 1:
                 window.location.href = "align";
@@ -395,7 +453,7 @@ function HandleMouse(e) {
                 window.location.href = "connect";
                 break;
             case 7:
-                console.log("7");
+                window.location.href = "grow";
                 break;
             case 8:
                 window.location.href = "remember";
@@ -521,4 +579,90 @@ function incX(angleRads, stepSize) {
 
 function incY(angleRads, stepSize) {
     return Math.round(Math.sin(angleRads) * stepSize) * -1;
+}
+
+function DrawFlower(fctx, numPetals, radius, x, y, col, angle) {
+
+    fctx.beginPath();
+
+    // draw petals
+    for (var n = 0; n < numPetals; n++) {
+        var theta1 = (((Math.PI * 2) / numPetals) * (n + 1));
+        var theta2 = (((Math.PI * 2) / numPetals) * (n));
+
+        var x1 = (radius * Math.sin(theta1 + angle)) + x;
+        var y1 = (radius * Math.cos(theta1 + angle)) + y;
+        var x2 = (radius * Math.sin(theta2 + angle)) + x;
+        var y2 = (radius * Math.cos(theta2 + angle)) + y;
+
+        fctx.moveTo(x, y);
+        fctx.bezierCurveTo(x1, y1, x2, y2, x, y);
+    }
+
+    fctx.closePath();
+    fctx.fillStyle = col;
+    fctx.fill();
+    fctx.strokeStyle = 'black';
+    fctx.lineWidth = 1;
+    fctx.stroke();
+
+    // draw yellow center
+    fctx.beginPath();
+    fctx.arc(x, y, radius / 6, 0, 2 * Math.PI, false);
+    fctx.fillStyle = 'yellow';
+    fctx.fill();
+    fctx.stroke();
+};
+
+function DrawHeart(ctx, x, y, size, color) {
+    let width = height = size;
+    ctx.save();
+    ctx.beginPath();
+    var topCurveHeight = height * 0.3;
+    ctx.moveTo(x + width / 2, y + topCurveHeight);
+
+    //top right curve 
+    ctx.quadraticCurveTo(
+        x + width / 2, y,
+        x + width / 4, y,
+    );
+    ctx.quadraticCurveTo(
+        x, y,
+        x, y + topCurveHeight,
+    );
+    // top left curve
+    ctx.quadraticCurveTo(
+        x, y,
+        x - width / 4, y,
+    );
+    ctx.quadraticCurveTo(
+        x - width / 2, y,
+        x - width / 2, y + topCurveHeight,
+    );
+
+
+    // bottom left curve
+    ctx.bezierCurveTo(
+        x - width / 2, y + (height + topCurveHeight) / 2,
+        x, y + (height + topCurveHeight) / 2,
+        x, y + height
+    );
+
+    // bottom right curve
+    ctx.bezierCurveTo(
+        x, y + (height + topCurveHeight) / 2,
+        x + width / 2, y + (height + topCurveHeight) / 2,
+        x + width / 2, y + topCurveHeight
+    );
+
+    ctx.closePath();
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = Math.ceil(3 * Math.log(size));
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.5;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.stroke();
+    ctx.restore();
 }
