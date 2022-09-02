@@ -74,6 +74,7 @@ Glad you asked!
 - You can check out the music-only album on [BandCamp](https://thegoodchemicals.bandcamp.com/album/etaoin-shrdlu)
 - You can watch my gussied-up versions of the videos on [YouTube](https://www.youtube.com/playlist?list=PLnPBNN_j8fRAT3yHNY_ZsBdGBbGwahxXa)
 - You *SHOULD* be able to view all of these things live at [shrdlu.live](https://shrdlu.live)
+- And the... GitHub repo is... here? [GitHub](https://github.com/jartis/tgc_etaoin_shrdlu)
 
 ## I have a question or comment that's not addressed here!
 
