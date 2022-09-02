@@ -29,7 +29,6 @@ body {
     text-align: center;
 }
 
-
 /* Micromodal stuff here */
 
 .modal {
@@ -293,4 +292,5 @@ button:active i {
 
 .green:active {
     filter: hue-rotate(255deg) saturate(1.2);
+
 }

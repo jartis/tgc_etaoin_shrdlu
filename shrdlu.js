@@ -200,7 +200,6 @@ function DrawAlign() {
     DrawPolygon(songCtx[1], 320, 180, 5, 170, -frame);
 }
 
-
 function makeGrowFlower() {
     return {
         x: 320,

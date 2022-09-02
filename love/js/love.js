@@ -282,6 +282,7 @@ function DrawScreen() {
     ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
     // ctx.globalAlpha = 1;
 
+
     // Draw the game elements
     DrawGame();
 
@@ -542,3 +543,4 @@ fettiSynth.set({
         release: 0.4
     }
 });
+

@@ -64,6 +64,7 @@ function getRandomGreen() {
     return 'hsl(' + h + ',' + s + '%,' + l + '%)';
 }
 
+
 function InitGame() {
     // bgcolor = getRandomRgb(0, 64);
 }
@@ -242,6 +243,7 @@ function playDrumLoop() {
     window.setTimeout(playDrumLoop, 2000);
 }
 
+
 //#region Handlers
 function HandleMouse(e) {
     if (ModalUp) return; // Ignore the mouse if a Modal is currently displayed
@@ -269,6 +271,7 @@ function DrawScreen() {
 
     // Draw the game elements
     ctx.lineCap = 'round';
+
     DrawGame();
 
     // Blit to the big canvas
@@ -499,3 +502,4 @@ function DrawFlower(fctx, numPetals, radius, x, y, col, angle) {
     fctx.fill();
     fctx.stroke();
 };
+
