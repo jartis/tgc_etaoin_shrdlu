@@ -142,6 +142,9 @@ function DrawGame() {
     // Draw the "Grow" canvas
     DrawGrow();
 
+    // Draw the "Create" canvas
+    DrawCreate();
+
     // Game element drawing goes here
     for (let i = 0; i < 9; i++) {
         let xPos = (i % 3) * 640;
@@ -191,6 +194,15 @@ function DrawNames() {
     ctx.fillText('Grow', 320 + 640, 180 + 720);
     ctx.fillStyle = 'hsl(0, 100%, 100%, ' + nameOpac[8] + ')';
     ctx.fillText('Remember', 320 + 1280, 180 + 720);
+}
+
+function DrawCreate() {
+    songCtx[2].fillStyle = bgCols[2];
+    songCtx[2].fillRect(0, 0, 640, 360);
+    if (frame % 99 == 0) {
+        CreateGrid = MakeCreateGrid();
+    }
+    DrawGrid(songCtx[2]);
 }
 
 function DrawAlign() {
@@ -434,7 +446,7 @@ function HandleMouse(e) {
                 window.location.href = "align";
                 break;
             case 2:
-                console.log("2");
+                window.location.href = "create";
                 break;
             case 3:
                 window.location.href = "decide";
@@ -665,4 +677,53 @@ function DrawHeart(ctx, x, y, size, color) {
     ctx.globalAlpha = 1;
     ctx.stroke();
     ctx.restore();
+}
+
+function DrawGrid(dctx) {
+    for (var y = 0; y < 9; y++) {
+        for (var x = 0; x < 16; x++) {
+            let dX = (40 * x) + 5;
+            let dY = (40 * y) + 5;
+            let hue = (frame + (x * y)) % 360;
+            if (CreateGrid[y][x]) {
+                dctx.fillStyle = 'hsl(' + hue + ', 75%, 50%)';
+            } else {
+                dctx.fillStyle = 'hsl(' + (360 - hue) + ', 25%, 10%)';
+            }
+            RoundRect(dctx, dX, dY, 30, 30, 5, true, false);
+        }
+    }
+}
+
+var CreateGrid = MakeCreateGrid();
+
+function MakeCreateGrid() {
+    let cg = [];
+    for (var y = 0; y < 9; y++) {
+        cg[y] = [];
+        for (var x = 0; x < 16; x++) {
+            cg[y][x] = (Math.random() < 0.5);
+        }
+    }
+    return cg;
+}
+
+function RoundRect(dctx, x, y, w, h, r, fill = false, stroke = true) {
+    dctx.beginPath();
+    dctx.moveTo(x + r, y);
+    dctx.lineTo(x + w - r, y);
+    dctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    dctx.lineTo(x + w, y + h - r);
+    dctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    dctx.lineTo(x + r, y + h);
+    dctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    dctx.lineTo(x, y + r);
+    dctx.quadraticCurveTo(x, y, x + r, y);
+    dctx.closePath();
+    if (fill) {
+        dctx.fill();
+    }
+    if (stroke) {
+        dctx.stroke();
+    }
 }
